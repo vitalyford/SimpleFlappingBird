@@ -21,7 +21,7 @@ public class GPanelForGame extends GBPanel implements ActionListener {
 	private JLabel scoreLabel = addLabel("Score: 0", 1,1,1,1);
 	
 	private java.util.List<Shape> shapes;
-	private boolean start, done, mousePressed;
+	private boolean start, done, mousePressed, cheatMode;
     private int obstacles[];      // saving all obstacles including the ground and the real obstacles as rectangles
     private Random rand;          // just a randomizer for obstacles
     private int obstaclesPassed;  // keeping track of which obstacle we should start with from the obstacles[] array
@@ -44,14 +44,20 @@ public class GPanelForGame extends GBPanel implements ActionListener {
 		shapes = new java.util.ArrayList<Shape>(); // saving all shapes that we need to draw
 		
 		scoreLabel.setText("Score: 0");
-    	// setting the timer for repaint of the game in ms, it defines the speed of the game in this case
+    	
+		// Set the timer for repainting the game in ms, it defines the speed of the game in this case
     	timer = new Timer(50, this); 
     	timer.start();
+    	
+    	// Set focus on the panel -> the panel will be forced to be focused on
+    	// Focusing on the panel will allow for reading keyboard presses
+    	this.setFocusable(true);
+    	this.requestFocusInWindow();
 	}
 
     public GPanelForGame(Color color) {
         setBackground(color);
-        start = mousePressed = false;
+        start = mousePressed = cheatMode = false;
         done = true;
         obstaclesPassed = 0;
     }
@@ -60,17 +66,29 @@ public class GPanelForGame extends GBPanel implements ActionListener {
     	rand = new Random();
     	n = 300;
     	obstacles = new int[n];
+    	
+    	// If true, then freeSpace distance must be even, otherwise odd
+    	// It will alternate obstacles at the top and bottom
+    	boolean switchTopBottom = true;
+    	
     	// Fill up the obstacles array with random obstacles
     	for (int i = 20; i < n;) { // starting with 20 because the first 20 spots should not have any obstacles
     		int obstacle = rand.nextInt(100) + 50; // the height of the obstacle
-    		int freeSpace = rand.nextInt(30);      // the distance between real obstacles
+    		int freeSpace = rand.nextInt(25);      // the distance between real obstacles
+    		if (switchTopBottom && freeSpace % 2 != 0)
+    			freeSpace++;
+    		else if (!switchTopBottom && freeSpace % 2 == 0)
+    			freeSpace++;
     		
     		obstacles[i] = obstacle;
     		for (int j = i + 1; j < freeSpace + i + 1 && j < n; j++) {
     			obstacles[j] = 0; // fill up free space with zeros
+    			if (switchTopBottom) break;
     		}
     		// set the current index in the array to the number, passed the latest obstacle
     		i = (freeSpace + i + 1 < n) ? (freeSpace + i + 1) : n; 
+    		
+    		switchTopBottom = !switchTopBottom; // alternates obstacles from top, bottom, top, and so on
     	}
     }
     
@@ -116,7 +134,7 @@ public class GPanelForGame extends GBPanel implements ActionListener {
     		shapes.add(new Rectangle2D.Double(obstacleInitX, obstacleInitY, obstacleWidth, 10)); // x, y, width, height
     		
     		// add obstacle
-    		if (obstacles[i] != 0 && i % 2 == 0) { // put to the bottom
+    		if (obstacles[i] != 0 && i % 2 == 0) { // put to the bottom the even-indexed obstacle
     			shapes.add(new Rectangle2D.Double(obstacleInitX, obstacleInitY - obstacles[i], obstacleWidth, obstacles[i]));
     		}
     		else if (obstacles[i] != 0) {          // put to the top
@@ -134,7 +152,7 @@ public class GPanelForGame extends GBPanel implements ActionListener {
         
         g.setColor(Color.blue);
         // Add all shapes to the panel on the screen
-        for (Shape s : shapes){
+        for (Shape s : shapes) {
         	((Graphics2D)g).fill(s);
         }
         
@@ -146,7 +164,11 @@ public class GPanelForGame extends GBPanel implements ActionListener {
     	int flyAtDelta = 25;   // how fast you want the hero to fly up while the mouse is pressed
     	g.setColor(Color.RED); // set the color for the hero
     	// Draw the hero as an ellipse, remember to keep track of flyAt
-    	Ellipse2D hero = new Ellipse2D.Double(0, obstacleInitY - heroHeight - flyAt, heroWidth, heroHeight);
+    	Ellipse2D hero;
+    	if (mousePressed) // for fun, change the form of the hero from vertical to horizontal when the mouse is pressed
+    		hero = new Ellipse2D.Double(0, obstacleInitY - heroHeight - flyAt, heroHeight, heroWidth);
+    	else
+    		hero = new Ellipse2D.Double(0, obstacleInitY - heroHeight - flyAt, heroWidth, heroHeight);
         ((Graphics2D)g).fill(hero); // x, y, width, height
         
         // Update how high the hero will fly up or down while the user presses the mouse
@@ -159,7 +181,7 @@ public class GPanelForGame extends GBPanel implements ActionListener {
         
         // Check for the hero colliding with the obstacles
         for (Shape s : shapes) {
-        	if (hero.intersects((Rectangle2D)s)) {
+        	if (hero.intersects((Rectangle2D)s) && !cheatMode) {
         		// well, game over
         		done = true;
         		start = false;
@@ -175,5 +197,26 @@ public class GPanelForGame extends GBPanel implements ActionListener {
     public void mouseReleased(int x, int y) {
     	mousePressed = false; // flyAt will start decreasing
     }
+    
+    // Process keyboard presses
+    protected void processComponentKeyEvent(KeyEvent e) {
+    	switch(e.getID()) {
+    	case KeyEvent.KEY_PRESSED:
+    		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+    			mousePressed = true; // Enter will replace the mouse presses
+    		}
+    		if (e.getKeyCode() == KeyEvent.VK_BACK_QUOTE) {
+    			cheatMode = true;    // I had to make this one ;-)
+    		}
+    		break;
+    	case KeyEvent.KEY_RELEASED:
+    		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+    			mousePressed = false; // Enter will replace the mouse presses
+    		}
+    		break;
+    	}
+    	super.processComponentKeyEvent(e);
+    }
 
 }
+
