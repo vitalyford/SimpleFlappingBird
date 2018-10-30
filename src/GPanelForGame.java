@@ -70,7 +70,7 @@ public class GPanelForGame extends GBPanel implements ActionListener {
     
     private void createNewObstacles() {
     	rand = new Random();
-    	n = 300; // number of obstacles including the ground and real ones
+    	n = 3000; // number of obstacles including the ground and real ones
     	obstacles = new int[n];
     	
     	// If switchTopBottom is true, then freeSpace distance must be even, otherwise odd
@@ -117,8 +117,10 @@ public class GPanelForGame extends GBPanel implements ActionListener {
         	scoreLabel.setText(scoreLabel.getText() + " You lost ¯\\_(ツ)_/¯");
         
         // If the user won or lost, we stop the timer
-        if (done)
+        if (done) {
+        	obstaclesPassed = 0;
         	timer.stop();
+        }
     }
 
     public void paintComponent (Graphics g) {
@@ -224,8 +226,10 @@ public class GPanelForGame extends GBPanel implements ActionListener {
     			cheatMode = true;    // I had to make this one ;-)
     		}
     		else if (e.getKeyCode() == KeyEvent.VK_UP) {
-    			heroHeight *= 2;     // Fuuuuuuuun ;-)
-    			heroWidth  *= 2;
+    			if (heroWidth * 2 <= this.getWidth() && heroHeight * 2 <= this.getHeight()) {
+	    			heroHeight *= 2;     // Fuuuuuuuun ;-)
+	    			heroWidth  *= 2;
+    			}
     		}
     		else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
     			if (heroWidth > 2 && heroHeight > 2) { // decrease the size but make sure it cannot reach zero
