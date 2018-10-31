@@ -29,6 +29,8 @@ public class GPanelForGame extends GBPanel implements ActionListener {
     private int heroWidth;        // width of the hero
     private int heroHeight;       // height of the hero
     private int flyAt;            // position of the hero when the hero is flying up (the user holds the mouse)
+    private int heroXLoc;         // position of the hero on X axis
+    private int moveX;            // defines how much per key-press the hero can move left/right
     
     private Timer timer;          // this timer is used to repaint the panel so that it will look like the ground is moving 
 	
@@ -39,6 +41,8 @@ public class GPanelForGame extends GBPanel implements ActionListener {
 		
 		obstaclesPassed = 0;
 		flyAt           = 0;
+		heroXLoc        = 0;
+		moveX           = 20;
 		mousePressed    = false;
 		start           = true;
 		done            = false;
@@ -176,9 +180,9 @@ public class GPanelForGame extends GBPanel implements ActionListener {
     	// Draw the hero as an ellipse, remember to keep track of flyAt
     	Ellipse2D hero;
     	if (mousePressed) // for fun: it changes the form of the hero from vertical to horizontal when the mouse is pressed
-    		hero = new Ellipse2D.Double(0, obstacleInitY - heroHeight - flyAt, heroHeight, heroWidth);
+    		hero = new Ellipse2D.Double(heroXLoc, obstacleInitY - heroHeight - flyAt, heroHeight, heroWidth);
     	else
-    		hero = new Ellipse2D.Double(0, obstacleInitY - heroHeight - flyAt, heroWidth, heroHeight);
+    		hero = new Ellipse2D.Double(heroXLoc, obstacleInitY - heroHeight - flyAt, heroWidth, heroHeight);
         ((Graphics2D)g).fill(hero); // x, y, width, height
         
         // Update how high the hero will fly up or down while the user presses the mouse
@@ -219,27 +223,43 @@ public class GPanelForGame extends GBPanel implements ActionListener {
     	// Check what event happened on the keyboard and then check what key was pressed
     	switch(e.getID()) {
     	case KeyEvent.KEY_PRESSED:
-    		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+    		if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_UP) {
     			mousePressed = true; // Enter will replace the mouse presses
     		}
     		else if (e.getKeyCode() == KeyEvent.VK_BACK_QUOTE) {
     			cheatMode = true;    // I had to make this one ;-)
     		}
-    		else if (e.getKeyCode() == KeyEvent.VK_UP) {
+    		else if (e.getKeyCode() == KeyEvent.VK_Q) {
     			if (heroWidth * 2 <= this.getWidth() && heroHeight * 2 <= this.getHeight()) {
 	    			heroHeight *= 2;     // Fuuuuuuuun ;-)
 	    			heroWidth  *= 2;
     			}
     		}
-    		else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+    		else if (e.getKeyCode() == KeyEvent.VK_W) {
     			if (heroWidth > 2 && heroHeight > 2) { // decrease the size but make sure it cannot reach zero
     				heroHeight /= 2;     // Continuing fuuuuuuun ;-)
     				heroWidth  /= 2;
     			}
     		}
+    		else if (e.getKeyCode() == KeyEvent.VK_LEFT) { // move the hero to the left
+    			if (heroXLoc - moveX >= 0) {
+    				heroXLoc -= moveX;
+    			}
+    			else {
+    				heroXLoc = 0;
+    			}
+    		}
+    		else if (e.getKeyCode() == KeyEvent.VK_RIGHT) { // move the hero to the right
+    			if (heroXLoc + moveX + heroWidth <= this.getWidth()) {
+    				heroXLoc += moveX;
+    			}
+    			else {
+    				heroXLoc = this.getWidth() - heroWidth;
+    			}
+    		}
     		break;
     	case KeyEvent.KEY_RELEASED:
-    		if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+    		if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_UP) {
     			mousePressed = false; // Enter will replace the mouse presses
     		}
     		break;
