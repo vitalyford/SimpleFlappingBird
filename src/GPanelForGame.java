@@ -21,7 +21,7 @@ public class GPanelForGame extends GBPanel implements ActionListener {
 	private JLabel scoreLabel = addLabel("Score: 0", 1,1,1,1);
 	
 	private java.util.List<Shape> shapes;
-	private boolean start, done, mousePressed, cheatMode;
+	private boolean start, done, mousePressed, cheatMode, moveHeroLeft, moveHeroRight;
     private int obstacles[];      // saving all obstacles including the ground and the real obstacles as rectangles
     private Random rand;          // just a randomizer for obstacles
     private int obstaclesPassed;  // keeping track of which obstacle we should start with from the obstacles[] array
@@ -199,6 +199,26 @@ public class GPanelForGame extends GBPanel implements ActionListener {
         	flyAt = 0;
         }
         
+        // Move hero to the left if the user pressed left key
+        if (moveHeroLeft) {
+        	if (heroXLoc - moveX >= 0) {
+				heroXLoc -= moveX;
+			}
+			else {
+				heroXLoc = 0;
+			}
+        }
+        
+        // Move hero to the right if the user pressed right key
+        if (moveHeroRight) {
+	        if (heroXLoc + moveX + heroWidth <= this.getWidth()) {
+				heroXLoc += moveX;
+			}
+			else {
+				heroXLoc = this.getWidth() - heroWidth;
+			}
+        }
+        
         // Check for the hero colliding with the obstacles
         for (Shape s : shapes) {
         	if (hero.intersects((Rectangle2D)s) && !cheatMode) {
@@ -224,12 +244,12 @@ public class GPanelForGame extends GBPanel implements ActionListener {
     	switch(e.getID()) {
     	case KeyEvent.KEY_PRESSED:
     		if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_UP) {
-    			mousePressed = true; // Enter will replace the mouse presses
+    			mousePressed = true; // Space or key-up will replace the mouse presses
     		}
     		else if (e.getKeyCode() == KeyEvent.VK_BACK_QUOTE) {
     			cheatMode = true;    // I had to make this one ;-)
     		}
-    		else if (e.getKeyCode() == KeyEvent.VK_Q) {
+    		else if (e.getKeyCode() == KeyEvent.VK_Q) { // increase the size of the hero
     			if (heroWidth * 2 <= this.getWidth() && heroHeight * 2 <= this.getHeight()) {
 	    			heroHeight *= 2;     // Fuuuuuuuun ;-)
 	    			heroWidth  *= 2;
@@ -242,25 +262,21 @@ public class GPanelForGame extends GBPanel implements ActionListener {
     			}
     		}
     		else if (e.getKeyCode() == KeyEvent.VK_LEFT) { // move the hero to the left
-    			if (heroXLoc - moveX >= 0) {
-    				heroXLoc -= moveX;
-    			}
-    			else {
-    				heroXLoc = 0;
-    			}
+    			moveHeroLeft = true;
     		}
     		else if (e.getKeyCode() == KeyEvent.VK_RIGHT) { // move the hero to the right
-    			if (heroXLoc + moveX + heroWidth <= this.getWidth()) {
-    				heroXLoc += moveX;
-    			}
-    			else {
-    				heroXLoc = this.getWidth() - heroWidth;
-    			}
+    			moveHeroRight = true;
     		}
     		break;
     	case KeyEvent.KEY_RELEASED:
     		if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_UP) {
     			mousePressed = false; // Enter will replace the mouse presses
+    		}
+    		else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+    			moveHeroLeft = false;
+    		}
+    		else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+    			moveHeroRight = false;
     		}
     		break;
     	}
