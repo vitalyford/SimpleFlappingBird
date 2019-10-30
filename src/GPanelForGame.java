@@ -268,8 +268,13 @@ public class GPanelForGame extends GBPanel implements ActionListener {
     			moveHeroRight = true;
     		}
     		else if (e.getKeyCode() == KeyEvent.VK_S) {
-    			timer.setDelay(timer.getDelay() * 2);
+    		    if (timer.getDelay() < 400)
+    		        timer.setDelay(timer.getDelay() * 2);
     		}
+            else if (e.getKeyCode() == KeyEvent.VK_A) {
+                if (timer.getDelay() > 10)
+                    timer.setDelay(timer.getDelay() / 2);
+            }
     		break;
     	case KeyEvent.KEY_RELEASED:
     		if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_UP) {
@@ -284,6 +289,9 @@ public class GPanelForGame extends GBPanel implements ActionListener {
     		else if (e.getKeyCode() == KeyEvent.VK_S) {
     			timer.setDelay(50);
     		}
+            else if (e.getKeyCode() == KeyEvent.VK_A) {
+                timer.setDelay(50);
+            }
     		break;
     	}
     	// Make sure that all other elements are aware of this key press
