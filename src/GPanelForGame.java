@@ -135,7 +135,7 @@ public class GPanelForGame extends GBPanel implements ActionListener {
         
     	int obstacleNum = 60; // number of obstacles on the screen at the same time
     	shapes.clear();       // clear the shapes
-    	int w             = this.getWidth(); // width of the this panel
+    	int w             = this.getWidth(); // width of this panel
     	int obstacleInitX = 0;
     	int obstacleInitY = this.getHeight() - 50;
     	int obstacleWidth = w / obstacleNum;
